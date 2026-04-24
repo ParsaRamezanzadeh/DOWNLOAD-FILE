@@ -1,0 +1,29 @@
+name: Download File
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get commit message
+        run: echo "MESSAGE=${{ github.event.head_commit.message }}" >> $GITHUB_ENV
+
+      - name: Download file
+        if: startsWith(env.MESSAGE, 'download:')
+        run: |
+          URL=$(echo "$MESSAGE" | sed 's/download:[ ]*//')
+          mkdir files
+          cd files
+          wget -O backup.tar.gz "$URL"
+
+      - name: Upload artifact
+        if: startsWith(env.MESSAGE, 'download:')
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloaded-file
+          path: files/
